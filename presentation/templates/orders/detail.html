@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}{{ order.tracking_number }} · Group 18{% endblock %}
+{% block content %}
+{% set badge = {'Pending': 'secondary', 'Ready': 'info', 'InTransit': 'warning',
+                'OutForDelivery': 'primary', 'Delivered': 'success', 'Closed': 'dark',
+                'Cancelled': 'danger'} %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Order <code>{{ order.tracking_number }}</code></h1>
+  <span class="badge fs-6 text-bg-{{ badge.get(order.status, 'secondary') }}">{{ order.status }}</span>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="row text-muted small mb-3">
+          <div class="col-md-4">Customer: <strong class="text-dark">{{ order.customer.full_name }}</strong></div>
+          <div class="col-md-4">Created: {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+          <div class="col-md-4">Updated: {{ order.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+        </div>
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>SKU</th><th>Item</th><th class="text-end">Qty</th><th class="text-end">Unit</th><th class="text-end">Subtotal</th></tr>
+          </thead>
+          <tbody>
+            {% for line in order.items %}
+            <tr>
+              <td><code>{{ line.inventory_item.stock_keeping_unit }}</code></td>
+              <td>{{ line.inventory_item.name }}</td>
+              <td class="text-end">{{ line.quantity }}</td>
+              <td class="text-end">${{ "%.2f"|format(line.unit_price|float) }}</td>
+              <td class="text-end">${{ "%.2f"|format(line.subtotal|float) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr class="fw-bold"><td colspan="4" class="text-end">Total</td>
+              <td class="text-end">${{ "%.2f"|format(order.total_amount|float) }}</td></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    {% if order.shipment %}
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <h2 class="h5 mb-2">Shipment <code>{{ order.shipment.tracking_number }}</code></h2>
+          <a class="btn btn-sm btn-outline-dark" href="{{ url_for('shipments.detail', shipment_id=order.shipment.id) }}">Open</a>
+        </div>
+        <p class="text-muted small mb-3">
+          Driver: {{ order.shipment.driver.full_name if order.shipment.driver else 'Unassigned' }}
+          {% if order.shipment.dispatched_at %} · Dispatched {{ order.shipment.dispatched_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+          {% if order.shipment.delivered_at %} · Delivered {{ order.shipment.delivered_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+        </p>
+        <h3 class="h6 text-uppercase text-muted">Timeline</h3>
+        <ul class="timeline list-unstyled mb-0">
+          {% for event in order.shipment.events %}
+          <li class="border-start ps-3 py-1">
+            <div class="fw-semibold">{{ event.event_type }}</div>
+            <div class="small text-muted">{{ event.event_time.strftime('%Y-%m-%d %H:%M') }}{% if event.location %} · {{ event.location }}{% endif %}
+              {% if event.recorder %} · by {{ event.recorder.full_name }}{% endif %}</div>
+          </li>
+          {% else %}
+          <li class="text-muted">No tracking events yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h6 text-uppercase text-muted mb-3">Actions</h2>
+
+        {% if user.role_name == 'Customer' and order.status in ('Pending', 'Ready') and order.customer_id == user.id %}
+        <form method="post" action="{{ url_for('orders.cancel', order_id=order.id) }}">
+          <button class="btn btn-outline-danger w-100" type="submit">Cancel order</button>
+        </form>
+        {% endif %}
+
+        {% if user.role_name == 'Admin' and order.status == 'Pending' %}
+        <form method="post" action="{{ url_for('orders.confirm', order_id=order.id) }}">
+          <label class="form-label small">Assign driver</label>
+          <select class="form-select mb-2" name="driver_id">
+            <option value="">Unassigned</option>
+            {% for driver in drivers %}
+            <option value="{{ driver.id }}">{{ driver.full_name }}</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-dark w-100" type="submit">Confirm order (→ Ready)</button>
+        </form>
+        {% endif %}
+
+        {% if user.role_name == 'Admin' and order.status == 'Ready' %}
+        <form method="post" action="{{ url_for('orders.dispatch', order_id=order.id) }}">
+          <button class="btn btn-dark w-100" type="submit">Dispatch order (→ In Transit)</button>
+        </form>
+        {% endif %}
+
+        {% if user.role_name == 'Driver' and order.shipment and order.shipment.driver_id == user.id %}
+          {% if order.status == 'InTransit' %}
+          <form method="post" action="{{ url_for('shipments.update_status', shipment_id=order.shipment.id) }}">
+            <input type="hidden" name="target" value="OutForDelivery">
+            <label class="form-label small">Location (optional)</label>
+            <input class="form-control mb-2" name="location" placeholder="e.g. Kowloon Depot">
+            <button class="btn btn-primary w-100" type="submit">Start delivery (→ Out for Delivery)</button>
+          </form>
+          {% elif order.status == 'OutForDelivery' %}
+          <form method="post" action="{{ url_for('shipments.update_status', shipment_id=order.shipment.id) }}">
+            <input type="hidden" name="target" value="Delivered">
+            <label class="form-label small">Location (optional)</label>
+            <input class="form-control mb-2" name="location" placeholder="e.g. Customer address">
+            <button class="btn btn-success w-100" type="submit">Confirm delivery (→ Delivered)</button>
+          </form>
+          {% endif %}
+        {% endif %}
+
+        {% if user.role_name == 'Admin' and order.status == 'Delivered' %}
+        <form method="post" action="{{ url_for('orders.close', order_id=order.id) }}">
+          <button class="btn btn-outline-dark w-100" type="submit">Close order (→ Closed)</button>
+        </form>
+        {% endif %}
+
+        {% if order.status in ('Closed', 'Cancelled') %}
+        <p class="text-muted small mb-0">This order is final.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

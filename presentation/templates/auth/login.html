@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Log in · Group 18{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-3">Log in</h1>
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label" for="email">Email</label>
+            <input class="form-control" type="email" id="email" name="email" required autofocus>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="password">Password</label>
+            <input class="form-control" type="password" id="password" name="password" required>
+          </div>
+          <button class="btn btn-dark w-100" type="submit">Log in</button>
+        </form>
+        <hr>
+        <p class="mb-0 small text-muted">
+          New customer? <a href="{{ url_for('auth.register_view') }}">Create an account</a>.
+        </p>
+      </div>
+    </div>
+    <div class="card mt-3">
+      <div class="card-body small text-muted">
+        Demo accounts: <code>customer@group18.local / customer123</code>,
+        <code>driver@group18.local / driver123</code>,
+        <code>admin@group18.local / admin123</code>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

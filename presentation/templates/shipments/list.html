@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Shipments · Group 18{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Shipments</h1>
+
+{% set badge = {'Assigned': 'secondary', 'InTransit': 'warning', 'OutForDelivery': 'primary',
+                'Delivered': 'success', 'Closed': 'dark', 'Cancelled': 'danger'} %}
+
+{% if shipments %}
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Tracking</th><th>Order</th><th>Driver</th><th>Status</th><th>Dispatched</th><th>Delivered</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for shipment in shipments %}
+        <tr>
+          <td><code>{{ shipment.tracking_number }}</code></td>
+          <td><a href="{{ url_for('orders.detail', order_id=shipment.order_id) }}">{{ shipment.order.tracking_number }}</a></td>
+          <td>{{ shipment.driver.full_name if shipment.driver else 'Unassigned' }}</td>
+          <td><span class="badge text-bg-{{ badge.get(shipment.status, 'secondary') }}">{{ shipment.status }}</span></td>
+          <td class="text-muted">{{ shipment.dispatched_at.strftime('%Y-%m-%d %H:%M') if shipment.dispatched_at else '—' }}</td>
+          <td class="text-muted">{{ shipment.delivered_at.strftime('%Y-%m-%d %H:%M') if shipment.delivered_at else '—' }}</td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-dark"
+              href="{{ url_for('shipments.detail', shipment_id=shipment.id) }}">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="alert alert-secondary">No shipments yet.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}New order · Group 18{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Place an order</h1>
+<p class="text-muted">Stock is reserved as soon as the order is placed and released if you cancel before dispatch.</p>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <form method="post">
+          {% for i in range(1, 4) %}
+          <div class="row g-2 mb-2 align-items-end">
+            <div class="col-8">
+              <label class="form-label">Item {{ i }}{% if i == 1 %} (required){% endif %}</label>
+              <select class="form-select" name="inventory_id_{{ i }}">
+                <option value="">— choose an item —</option>
+                {% for item in items %}
+                <option value="{{ item.id }}">{{ item.stock_keeping_unit }} — {{ item.name }}
+                  ({{ item.quantity_on_hand }} in stock, ${{ "%.2f"|format(item.unit_price|float) }})</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-3">
+              <label class="form-label">Qty</label>
+              <input class="form-control" type="number" name="quantity_{{ i }}" min="1" value="1">
+            </div>
+          </div>
+          {% endfor %}
+          <button class="btn btn-dark mt-2" type="submit">Place order</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h6 text-uppercase text-muted">Available stock</h2>
+        <ul class="list-unstyled mb-0">
+          {% for item in items %}
+          <li class="d-flex justify-content-between border-bottom py-1">
+            <span>{{ item.stock_keeping_unit }} · {{ item.name }}</span>
+            <span class="text-muted">{{ item.quantity_on_hand }} @ ${{ "%.2f"|format(item.unit_price|float) }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Reports · Group 18{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Reports</h1>
+  <a class="btn btn-outline-dark" href="{{ url_for('reports.orders_csv') }}">Download CSV</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card shadow-sm"><div class="card-body">
+      <div class="text-muted small text-uppercase">Total orders</div>
+      <div class="display-6">{{ summary.total_orders }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm"><div class="card-body">
+      <div class="text-muted small text-uppercase">Delivered + Closed revenue</div>
+      <div class="display-6">${{ "%.2f"|format(summary.revenue) }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm"><div class="card-body">
+      <div class="text-muted small text-uppercase">Cancelled orders</div>
+      <div class="display-6">{{ summary.cancelled }}</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h2 class="h6 text-uppercase text-muted">Orders by status</h2>
+    <table class="table table-sm mb-0">
+      <tbody>
+        {% for status in ['Pending', 'Ready', 'InTransit', 'OutForDelivery', 'Delivered', 'Closed', 'Cancelled'] %}
+        <tr>
+          <td>{{ status }}</td>
+          <td class="text-end">{{ summary.by_status.get(status, 0) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

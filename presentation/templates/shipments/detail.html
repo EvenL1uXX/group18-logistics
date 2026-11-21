@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ shipment.tracking_number }} · Group 18{% endblock %}
+{% block content %}
+{% set badge = {'Assigned': 'secondary', 'InTransit': 'warning', 'OutForDelivery': 'primary',
+                'Delivered': 'success', 'Closed': 'dark', 'Cancelled': 'danger'} %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Shipment <code>{{ shipment.tracking_number }}</code></h1>
+  <span class="badge fs-6 text-bg-{{ badge.get(shipment.status, 'secondary') }}">{{ shipment.status }}</span>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <p class="mb-2">Order: <a href="{{ url_for('orders.detail', order_id=shipment.order_id) }}">{{ shipment.order.tracking_number }}</a></p>
+        <p class="mb-2">Driver: <strong>{{ shipment.driver.full_name if shipment.driver else 'Unassigned' }}</strong>
+          {% if shipment.driver and shipment.driver.phone %} · {{ shipment.driver.phone }}{% endif %}</p>
+        <p class="mb-0 text-muted small">
+          {% if shipment.dispatched_at %}Dispatched {{ shipment.dispatched_at.strftime('%Y-%m-%d %H:%M') }} · {% endif %}
+          {% if shipment.delivered_at %}Delivered {{ shipment.delivered_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+        </p>
+
+        <h2 class="h6 text-uppercase text-muted mt-4">Timeline</h2>
+        <ul class="timeline list-unstyled mb-0">
+          {% for event in shipment.events %}
+          <li class="border-start ps-3 py-1">
+            <div class="fw-semibold">{{ event.event_type }}</div>
+            <div class="small text-muted">{{ event.event_time.strftime('%Y-%m-%d %H:%M') }}{% if event.location %} · {{ event.location }}{% endif %}
+              {% if event.recorder %} · by {{ event.recorder.full_name }}{% endif %}</div>
+          </li>
+          {% else %}
+          <li class="text-muted">No tracking events yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h6 text-uppercase text-muted mb-3">Driver actions</h2>
+        {% if user.role_name == 'Driver' and shipment.driver_id == user.id %}
+          {% if shipment.order.status == 'InTransit' %}
+          <form method="post" action="{{ url_for('shipments.update_status', shipment_id=shipment.id) }}">
+            <input type="hidden" name="target" value="OutForDelivery">
+            <label class="form-label small">Location (optional)</label>
+            <input class="form-control mb-2" name="location" placeholder="e.g. Kowloon Depot">
+            <button class="btn btn-primary w-100" type="submit">Start delivery (→ Out for Delivery)</button>
+          </form>
+          {% elif shipment.order.status == 'OutForDelivery' %}
+          <form method="post" action="{{ url_for('shipments.update_status', shipment_id=shipment.id) }}">
+            <input type="hidden" name="target" value="Delivered">
+            <label class="form-label small">Location (optional)</label>
+            <input class="form-control mb-2" name="location" placeholder="e.g. Customer address">
+            <button class="btn btn-success w-100" type="submit">Confirm delivery (→ Delivered)</button>
+          </form>
+          {% else %}
+          <p class="text-muted small mb-0">No action available in status {{ shipment.order.status }}.</p>
+          {% endif %}
+        {% else %}
+        <p class="text-muted small mb-0">Only the assigned driver can update this shipment.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Orders · Group 18{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Orders</h1>
+  {% if user.role_name == 'Customer' %}
+  <a class="btn btn-dark" href="{{ url_for('orders.new_order') }}">+ New order</a>
+  {% endif %}
+</div>
+
+{% set badge = {'Pending': 'secondary', 'Ready': 'info', 'InTransit': 'warning',
+                'OutForDelivery': 'primary', 'Delivered': 'success', 'Closed': 'dark',
+                'Cancelled': 'danger'} %}
+
+{% if orders %}
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Tracking</th><th>Customer</th><th>Status</th><th>Total</th><th>Created</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+        <tr>
+          <td><code>{{ order.tracking_number }}</code></td>
+          <td>{{ order.customer.full_name if order.customer else '' }}</td>
+          <td><span class="badge text-bg-{{ badge.get(order.status, 'secondary') }}">{{ order.status }}</span></td>
+          <td>${{ "%.2f"|format(order.total_amount|float) }}</td>
+          <td class="text-muted">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-dark"
+              href="{{ url_for('orders.detail', order_id=order.id) }}">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="alert alert-secondary">No orders yet.</div>
+{% endif %}
+{% endblock %}
