@@ -1,0 +1,28 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.12.4, pytest-9.2.0, pluggy-1.7.0 -- C:\Users\20643\AppData\Local\Programs\Python\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: E:\DeepSeekWork\projects\group18-logistics
+collecting ... collected 20 items
+
+tests/test_api.py::test_orders_require_login PASSED                      [  5%]
+tests/test_api.py::test_full_happy_path_over_http PASSED                 [ 10%]
+tests/test_api.py::test_customer_cannot_read_admin_inventory PASSED      [ 15%]
+tests/test_inventory.py::test_stock_in_increases_quantity PASSED         [ 20%]
+tests/test_inventory.py::test_stock_out_decreases_quantity PASSED        [ 25%]
+tests/test_inventory.py::test_stock_out_insufficient_rejected PASSED     [ 30%]
+tests/test_inventory.py::test_order_reserves_stock_and_cancel_restores PASSED [ 35%]
+tests/test_inventory.py::test_order_above_stock_rejected PASSED          [ 40%]
+tests/test_pages.py::test_admin_pages_render PASSED                      [ 45%]
+tests/test_pages.py::test_customer_pages_render PASSED                   [ 50%]
+tests/test_pages.py::test_driver_pages_render PASSED                     [ 55%]
+tests/test_pages.py::test_login_and_register_pages_render PASSED         [ 60%]
+tests/test_state_machine.py::test_lifecycle_pending_to_closed PASSED     [ 65%]
+tests/test_state_machine.py::test_illegal_forward_jump_rejected PASSED   [ 70%]
+tests/test_state_machine.py::test_wrong_role_cannot_confirm PASSED       [ 75%]
+tests/test_state_machine.py::test_driver_cannot_advance_before_dispatch PASSED [ 80%]
+tests/test_state_machine.py::test_cancel_pending_returns_stock PASSED    [ 85%]
+tests/test_state_machine.py::test_cancel_ready_returns_stock_and_cancels_shipment PASSED [ 90%]
+tests/test_state_machine.py::test_cancel_after_dispatch_rejected PASSED  [ 95%]
+tests/test_state_machine.py::test_customer_cannot_cancel_someone_elses_order PASSED [100%]
+
+============================= 20 passed in 6.66s ==============================
