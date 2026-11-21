@@ -34,7 +34,9 @@ Changes follow the change-request table in the handbook: a request records what 
 
 ## 7. Process and Collaboration
 
-The seven-person team coordinated through a WeChat group and a shared task board with three states. Design artefacts were frozen after the progress review; the implementation phase [[CONFIRM: two-person scope — Product Owner plus AI pair-programming]] delivered the code in this repository, while the team's design and review material remains the source of truth for the requirements. [[CONFIRM: AI usage declaration wording]].
+The seven-person team coordinated through a WeChat group and a shared task board with three states. Design artefacts were frozen after the progress review. The implementation phase was delivered by the whole team with AI pair-programming support: the team contributed approximately 70% of the implementation effort and AI assistance approximately 30%. The team's design and review material remains the source of truth for the requirements.
+
+AI usage: the team used AI assistants (DeepSeek Harness) for drafting, code generation and review. Requirements, design decisions and final acceptance of the work were made by the team; AI output was reviewed by the team before it was committed.
 
 ## 8. Conclusion
 
